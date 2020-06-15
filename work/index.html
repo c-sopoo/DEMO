@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .title {
+      height: 200px;
+      background-color: lightblue;
+    }
+    .exercise-item:not(:last-child) {
+      /* margin-bottom: 30px; */
+    }
+    .container {
+      position: relative;
+      width: 600px;
+      height: 400px;
+      overflow-y: scroll;
+      margin: 20px auto;
+    }
+    .pup {
+      /* height: 200px; */
+      width: 600px;
+      padding: 20px;
+      box-sizing: border-box;
+      background: pink;
+      position: fixed;
+      /* top: 0;
+      left: 0; */
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container" ref="container" @scroll='scroll'>
+      <div class="pup" ref="pup" v-show='flag'><span>{{pupText}}</span></div>
+      <div class="exercise-item" v-for='(item, i) in list' :key='item.id' ref="exerciseItem">
+        <div class="title">{{item.title}}</div>
+        <ul>
+          <li v-for='content in item.content'>
+            <p><span>{{content.option}}.</span><span>{{content.question}}</span></p>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="./vue.js"></script>
+  <script src="./axios.js"></script>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        list: [],
+        flag: false,
+        scrollTop: -1,
+        currentIndex: 0,
+        diff: -1
+      },
+      created() {
+        this._getData()
+      },
+      computed: {
+        pupText() {
+          if(this.scrollTop < 0) {
+            return ''
+          }
+          return this.list[this.currentIndex] ? this.list[this.currentIndex].title : ''
+        }
+      },
+      watch: {
+        list(newList) {
+          setTimeout(() => {
+            this._listHeight()
+          }, 20);
+        },
+        scrollTop(newScorllTop) {
+          newScorllTop === 0? this.flag = false: this.flag = true
+          // 获取pup层的高度
+          if(this.flag) {
+            this.pupHeight = this.$refs.pup.clientHeight
+          }
+          if(newScorllTop < 0) {
+            this.currentIndex = 0
+            return
+          }
+          // 在中间部分滚动
+          for(let i=0; i<this.listHeight.length - 1; i++) {
+            // 注意这里是length-1
+            let height1 = this.listHeight[i]
+            let height2 = this.listHeight[i+1]
+            if(newScorllTop >= height1 && newScorllTop <= height2) {
+              this.currentIndex = i
+              console.log(this.currentIndex)
+              this.diff =  height2 - newScorllTop
+              console.log(this.diff)
+              return
+            }
+          }
+        },
+        diff(newDiff) {
+          console.log('newDiff---', newDiff)
+          // 设置动效
+          let pupTop = (newDiff > 0 && newDiff < this.pupHeight)? newDiff-this.pupHeight : 0
+          let opacityPercent = (newDiff > 0 && newDiff < this.pupHeight)? Math.abs(newDiff) / this.pupHeight : 1
+          console.log(pupTop)
+          // if(newDiff > 0 && newDiff < this.pupHeight) {
+
+          // console.log(Math.abs(newDiff / this.pupHeight))
+          // }
+          console.log(opacityPercent)
+          this.$refs.pup.style.transform = `translate3d(0,${pupTop}px,0)`
+          this.$refs.pup.style.opacity = opacityPercent
+          this.$refs.pup.style.transition = `all 0.2s`
+        }
+      },
+      methods: {
+        async _getData() {
+          let res = await axios.get('./index.json')
+          console.log(res)
+          this.list = res.data.exercise
+        },
+        scroll(ev) {
+          // console.log(ev.target.scrollTop)
+          this.scrollTop = ev.target.scrollTop
+        },
+        _listHeight() {
+          this.listHeight = []
+          const listItem = this.$refs.exerciseItem
+          let height = 0
+          this.listHeight.push(height)
+          for(let i=0; i<listItem.length; i++) {
+            let item = listItem[i]
+            height += item.clientHeight
+            this.listHeight.push(height)
+          }
+          console.log(this.listHeight)
+        }
+      }
+        
+    })
+  </script>
+</body>
+</html>
