@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    .container {
+      margin: 40px;
+    }
+    .content {
+      height: 200px;
+    }
+    .user-operate {
+      display: flex;
+      align-items: center;
+      user-select: none;
+    }
+    ul {
+      display: flex;
+      list-style: none;
+    }
+    li {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      line-height: 40px;
+      background-color: #c9c3e6;
+      margin: 0 10px;
+      cursor: pointer;
+    }
+    .btn {
+      width: 60px;
+      height: 40px;
+      background: #f9ebdf;
+      line-height: 40px;
+      text-align: center;
+      color: #444444;
+      cursor: pointer;
+    }
+    .active {
+      transform: scale(1.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="content" v-show='currentPage.story'>
+        <h1><i>{{currentPage.title}}</i></h1>
+        <p>{{currentPage.story}}</p>
+      </div>
+      <div class="user-operate">
+        <div class="btn next" @click='next'>下一页</div>
+        <ul>
+          <li v-for='(item, index) in list' 
+              :key='index' 
+              @click='changePage(index)'
+              :class='{active: currentIndex === index}'
+          >{{index}}</li>
+        </ul>
+        <div class="btn prev" @click='prev'>上一页</div>
+      </div>
+      
+    </div>
+  </div>
+
+  <script src="./vue.js"></script>
+  <script src="./axios.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data() {
+        return {
+          list: [],
+          currentIndex: 0,
+          currentPage: {}
+        }
+      },
+      created() {
+        this._getData()
+      },
+      watch: {
+        currentIndex(newIndex) {
+          this.currentPage = this.list[newIndex]
+        }
+      },
+      methods: {
+        async _getData() {
+          let {data} = await axios.get('./index.json')
+          console.log(data)
+          this.list = data.list
+          this.currentPage = this.list[0]
+          console.log(this.list)
+        },
+        changePage(i) {
+          this.currentIndex = i
+        },
+        next() {
+          if(this.currentIndex >= this.list.length-1) return;
+          this.currentIndex ++
+        },
+        prev() {
+          if(this.currentIndex <= 0) return
+          this.currentIndex --
+        }
+      }
+      
+    })
+  </script>
+</body>
+</html>
