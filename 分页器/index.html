@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      user-select: none;
+    }
+    ul {
+      list-style: none;
+      display: flex;
+    }
+    .next , .prev {
+      width: 60px;
+    }
+    li {
+      padding: 5px;
+      width: 40px;
+      height: 30px;
+      border: 1px solid #4e6ef2;
+      border-radius: 3px;
+      text-align: center;
+      line-height: 30px;
+      margin: 0 5px;
+      cursor: pointer;
+    }
+    .total {
+      width: 100px;
+    }
+    .active {
+      color: #fff;
+      background: #4e6ef2;
+    }
+    .unselect {
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <ul>
+      <li class="next" @click='next' ref="next">下一页</li>
+      <li 
+        class="item"
+        v-for='(page, i) in pages'
+        :class="{active: currentPage === page}" 
+        @click='selectItem($event, page)'
+        ref="selectItem"
+      >{{page}}</li>
+      <li class="prev" @click=prev ref="prev">上一页</li>
+      <li class="total">共100页</li>
+    </ul>
+    <p>第{{currentPage}}页</p>
+  </div>
+  <script src="./vue.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        currentPage: 1,
+        total: 100
+      },
+      computed: {
+        pages() {
+          if(this.currentPage<5) {
+            return [1,2,3,4,5,'···',this.total]
+          }else if(this.currentPage > this.total-4) {
+            return [1,'···',this.total-4,this.total-3,this.total-2,this.total - 1,this.total]
+          }else {
+            return [1,'···',this.currentPage-1,this.currentPage,this.currentPage+1,'···',this.total]
+          }
+        }
+      },
+      watch: {
+        currentPage: {
+          handler(newPage) {
+            this._changePage(newPage)
+            
+          },
+        }
+      },
+      updated() {
+        this.change()
+      },
+      mounted() {
+        this.$nextTick(() => {
+          this.change()
+          this._changePage(this.currentPage)
+        })
+      },
+      methods: {
+        selectItem(ev, page){
+          if(ev.target.innerHTML === '···') return;
+          if(page === this.currentPage) return;
+          this.currentPage = page
+        },
+        next() {
+          if(this.currentPage >= this.total) return;
+          this.currentPage ++
+        },
+        prev() {
+          if(this.currentPage <= 1) return;
+          this.currentPage --
+        },
+        change() {
+          this.$refs.selectItem && this.$refs.selectItem.forEach(ele => {
+              ele.classList.remove('unselect')
+              if(ele.innerHTML === '···') {
+                ele.classList.add('unselect')
+              }
+            })
+        },
+        _changePage(page) {
+          this.$refs.next.classList.remove('unselect')
+          this.$refs.prev.classList.remove('unselect')
+          if(page >= this.total){
+              this.$refs.next.classList.add('unselect')
+              return
+            }
+            if(page <= 1) {
+              this.$refs.prev.classList.add('unselect')
+              return
+            }
+            
+        }
+      },
+    })
+  </script>
+</body>
+</html>
