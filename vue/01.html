@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    *{
+      padding: 0;
+      margin: 0;
+    }
+    .wrap {
+      width: 500px;
+      height: 500px;
+      border: 1px solid cadetblue;
+    }
+    .box1, .line, .box2 {
+      float: left;
+      height: 100%;
+    }
+    .box1 {
+      width: 40%;
+      background-color: cornflowerblue;
+    }
+    .box2 {
+      width: 59%;
+      background-color: darkgoldenrod;
+    }
+    .line {
+      width: 3px;
+      background: #000;
+      cursor: w-resize;
+    }
+    .clearfix::after {
+      content: '';
+      display: block;
+      clear: both;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <p v-for='item in list'>
+      <input type="radio" name="option" :value="item.val" v-model='item.select' @change='selectItem(item)'/>
+      {{item.val}}
+    </p>
+    <p v-for='item in list1.data'>
+      <input type="checkbox" :value="item.val" v-model='list1.select' @change='selectItem1(list1.select)'/>
+      {{item.val}}
+    </p>
+    <div class="wrap clearfix" ref="con">
+      <div class="box1" ref="box1"></div>
+      <div class="line" ref="line" @mousedown='down'></div>
+      <div class="box2" ref="box2"></div>
+    </div>
+  </div>
+  <script src="./vue.js"></script>
+  <script>
+    new Vue({
+      el: '#app',
+      data: {
+        list:[
+          {val: 'A', select: ''},
+          {val: 'B', select: ''},
+          {val: 'C', select: ''},
+          {val: 'D', select: ''},
+        ],
+        list1:{select: [], data: [
+          {val: 'A'},
+          {val: 'B' },
+          {val: 'C'},
+          {val: 'D' },
+        ]}
+      },
+      mounted() {
+        document.addEventListener('mouseup',(ev) => {
+          document.removeEventListener('mousemove', this._move)
+        })
+      },
+      methods: {
+        selectItem(item) {
+          console.log(item.select)
+        },
+        selectItem1(val) {
+          console.log(val.join(''))
+        },
+        down (ev) {
+          this.x = ev.pageX
+
+          this.b1 = this.$refs.box1.clientWidth;
+          this.b2 = this.$refs.box2.clientWidth;
+          this.con = this.$refs.con.clientWidth;
+          console.log(this.x)
+          console.log(this.b1, this.b2)
+          document.addEventListener('mousemove', this._move)
+        },
+        _move(ev) {
+          // console.log(ev.pageX)
+          let w = this.x - ev.pageX
+          console.log(w)
+          if(w>(this.b1/2)) return;
+          if(Math.abs(w)>this.b2/2) return;
+          this.$refs.box1.style.width = (this.b1 - w) +'px';
+          this.$refs.box2.style.width = (this.b2 + w) +'px';
+        }
+      },
+    })
+  </script>
+</body>
+</html>
