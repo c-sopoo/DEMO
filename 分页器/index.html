@@ -93,19 +93,23 @@
         })
       },
       methods: {
+        // 手动点击页码
         selectItem(ev, page){
           if(ev.target.innerHTML === '···') return;
           if(page === this.currentPage) return;
           this.currentPage = page
         },
+        // 下一页
         next() {
           if(this.currentPage >= this.total) return;
           this.currentPage ++
         },
+        // 上一页
         prev() {
           if(this.currentPage <= 1) return;
           this.currentPage --
         },
+        // 
         change() {
           this.$refs.selectItem && this.$refs.selectItem.forEach(ele => {
               ele.classList.remove('unselect')
